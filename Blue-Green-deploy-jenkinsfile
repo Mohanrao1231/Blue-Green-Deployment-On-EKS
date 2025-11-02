@@ -1,0 +1,169 @@
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'DEPLOY_ENV', choices: ['blue', 'green'], description: 'Choose which environment to deploy: Blue or Green')
+        string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Specify the Docker image tag for the deployment')
+        booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green environments')
+        booleanParam(name: 'DELETE_PREPROD_RESOURCES', defaultValue: false, description: 'Delete pre-production resources if no longer needed')
+        booleanParam(name: 'ROLLBACK', defaultValue: false, description: 'Roll back to the previous environment')
+    }
+
+    environment {
+        CHARTS_DIR = 'helm-charts'
+        FLASK_HELM_CHART = 'flask-app'
+        MYSQL_HELM_CHART = 'mysql'
+        SERVICE_HELM_CHART = 'services'
+        RELEASE_NAME_MYSQL = 'database'
+        RELEASE_NAME_SERVICE = 'service'
+        REGISTRY_CREDENTIAL = 'dockerhub'
+        DOCKER_IMAGE_NAME = 'preranamauryaa/portfolioflaskapp'
+        DOCKER_IMAGE_TAG = "${params.DOCKER_TAG}"
+        RELEASE_NAME_FLASK = "portfolio-${DOCKER_IMAGE_TAG}"
+    }
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Clone Repo') {
+            steps {
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: '*/master']], 
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'CleanBeforeCheckout']
+                    ],
+                    userRemoteConfigs: [
+                        [credentialsId: '90f6337a-2974-483f-9adb-f0f9d46198b7', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
+                    ]
+                ]
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            when {
+                expression { !params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES }
+            }
+            steps {
+                script {
+                    echo 'Building and pushing the Docker image to Docker Hub'
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
+                    docker.withRegistry('', REGISTRY_CREDENTIAL) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('Install MySQL') {
+            when {
+                expression { !params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES }
+            }
+            steps {
+                script {
+                    echo 'Installing or upgrading MySQL using Helm'
+                    sh "helm upgrade --install ${RELEASE_NAME_MYSQL} ${CHARTS_DIR}/${MYSQL_HELM_CHART} --wait"
+                }
+            }
+        }
+
+        stage('Install Flask App') {
+            when {
+                expression { !params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES}
+            }
+            steps {
+                script {
+                    echo "Deploying Flask app to ${params.DEPLOY_ENV} environment"
+                    sh """
+                    helm upgrade --install ${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV} \
+                        ${CHARTS_DIR}/${FLASK_HELM_CHART} \
+                        --values ${CHARTS_DIR}/${FLASK_HELM_CHART}/${params.DEPLOY_ENV}-values.yaml \
+                        --set image.tag=${DOCKER_IMAGE_TAG} \
+                        --wait
+                    """
+
+                    echo "Installing or upgrading the service for ${params.DEPLOY_ENV} environment"
+                    sh """
+                    helm upgrade --install ${RELEASE_NAME_SERVICE} \
+                        ${CHARTS_DIR}/${SERVICE_HELM_CHART} \
+                        --wait
+                    """
+                }
+            }
+        }
+
+        stage('Switch Traffic') {
+            when {
+                expression { params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES } 
+            }
+            steps {
+                script {
+                    echo "Switching traffic"
+                    
+                    sh "chmod +x ${CHARTS_DIR}/switch-traffic.sh"
+                    sh "${CHARTS_DIR}/switch-traffic.sh ${RELEASE_NAME_SERVICE}-ingress ${CHARTS_DIR}/services ${RELEASE_NAME_SERVICE}"
+                }
+            }
+        }
+        stage('Delete Pre-Prod Resources') {
+    when {
+        expression { params.DELETE_PREPROD_RESOURCES && !params.ROLLBACK && !params.SWITCH_TRAFFIC }
+    }
+    steps {
+        script {
+            def currentService = sh(script: """
+                kubectl get ingress ${RELEASE_NAME_SERVICE}-ingress -o=jsonpath='{.spec.rules[1].http.paths[0].backend.service.name}'
+            """, returnStdout: true).trim()
+
+            // Get the selector for the current service
+            def currentServiceSelector = sh(script: """
+                kubectl get service ${currentService} -o=jsonpath='{.spec.selector.traffic}'
+            """, returnStdout: true).trim()
+            
+            if (currentServiceSelector == "blue-traffic") {
+                // Find the release name that contains 'blue'
+                def releaseToDelete = sh(script: """
+                    helm ls -n default | grep blue | awk '{print \$1}'
+                """, returnStdout: true).trim()
+                // Uninstall the blue release
+                if (releaseToDelete) {
+                    sh "helm uninstall ${releaseToDelete}"
+                    echo "The Blue environment is now empty. You can deploy the new version in Blue."
+                }
+            } else if (currentServiceSelector == "green-traffic") {
+                // Find the release name that contains 'green'
+                def releaseToDelete = sh(script: """
+                    helm ls -n default | grep green | awk '{print \$1}'
+                """, returnStdout: true).trim()
+                // Uninstall the green release
+                if (releaseToDelete) {
+                    sh "helm uninstall ${releaseToDelete}"
+                    echo "The Green environment is now empty. You can deploy the new version in Green."
+                }
+            } else {
+                // If selector is not blue-traffic or green-traffic, uninstall both
+                echo "No release to delete"
+            }
+        }
+    }
+}
+
+        stage('Rollback') {
+            when {
+                expression { params.ROLLBACK  && !params.SWITCH_TRAFFIC && !params.DELETE_PREPROD_RESOURCES }
+            }
+            steps {
+                script {
+                    echo "Rolling back to the previous environment"
+                    
+                    sh "chmod +x ${CHARTS_DIR}/switch-traffic.sh"
+                    sh "${CHARTS_DIR}/switch-traffic.sh ${RELEASE_NAME_SERVICE}-ingress ${CHARTS_DIR}/services ${RELEASE_NAME_SERVICE}"
+                }
+            }
+        }
+    }
+}

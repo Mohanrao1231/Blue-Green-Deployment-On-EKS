@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flask.fullname" . }}
+  labels:
+    app: {{ include "flask.fullname" . }}
+    traffic: {{ .Values.labels.traffic }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "flask.fullname" . }}
+      traffic: {{ .Values.labels.traffic }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "flask.fullname" . }}
+        traffic: {{ .Values.labels.traffic }}
+    spec:
+      containers:
+        - name: flaskapp
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: MYSQL_HOST
+              value: "{{ .Values.mysql.host }}"
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flask.fullname" . }}-mysql-secret  # Reference the MySQL password secret
+                  key: MYSQL_PASSWORD  # Key for the MySQL password in the secret
+            - name: MYSQL_USER
+              value: "{{ .Values.mysql.user }}"
+            - name: MYSQL_DB
+              value: "{{ .Values.mysql.database }}"
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          imagePullPolicy: Always
