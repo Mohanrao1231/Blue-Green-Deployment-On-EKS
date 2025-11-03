@@ -25,7 +25,7 @@ This pipeline facilitates Blue-Green Deployment with comprehensive features to m
 
 This pipeline is a complete solution for managing Blue-Green deployments with Kubernetes and Helm, ensuring seamless traffic transitions, resource cleanup, and rollback capabilities.
 
-![Jenkins-pipeline](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Jenkins-pipeline.png)
+![Jenkins-pipeline](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Jenkins-pipeline.png)
 
 ## Dockerizing the Flaskapp 
 ## Prerequisites
