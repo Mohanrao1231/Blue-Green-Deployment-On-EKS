@@ -1,10 +1,10 @@
 # Blue Green Deployment of Flask portfolio on EKS using Helm Charts
 This project implements a Blue-Green deployment strategy to seamlessly deploy a Flask-based portfolio application on Amazon EKS. Using a Jenkins pipeline, the workflow automates code retrieval from GitHub, builds, tags, and Dockerizes the application. The deployment process dynamically switches between Blue and Green environments based on the selected configuration, ensuring zero-downtime updates and smooth application rollouts and rollback.
 
-![Blue Green Deployment](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/befor_switching.png)
+![Blue Green Deployment](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/befor_switching.png)
 
 After Switching the  traffics 
-![Blue Green Deployment(after switching)](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/after_switching.png)
+![Blue Green Deployment(after switching)](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/after_switching.png)
 
 ## Jenkins Pipeline for Blue Green Deployment using Helm Charts
 This pipeline facilitates Blue-Green Deployment with comprehensive features to manage deployments, traffic switching, and rollback seamlessly. It includes the following parameters:
@@ -25,7 +25,7 @@ This pipeline facilitates Blue-Green Deployment with comprehensive features to m
 
 This pipeline is a complete solution for managing Blue-Green deployments with Kubernetes and Helm, ensuring seamless traffic transitions, resource cleanup, and rollback capabilities.
 
-![Jenkins-pipeline](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Jenkins-pipeline.png)
+![Jenkins-pipeline](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Jenkins-pipeline.png)
 
 ## Dockerizing the Flaskapp 
 ## Prerequisites
@@ -259,7 +259,7 @@ aws eks update-kubeconfig --region us-east-1 --name Blue-Green
 ### Create a Jenkins Pipeline
 Create a Jenkins Pipeline **Blue-Green-Deployemnt** using the pipeline script "Blue-Green-deploy-jenkinsfile" and bluild using parameters.
 
-![pipeline-stage-view](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/Jenkins-stage-view.png)
+![pipeline-stage-view](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/Jenkins-stage-view.png)
 
 ## How Switching of traffic is happening 
 1. The script switch-traffic.sh first checks the current service receiving traffic by querying the ingress resource:
