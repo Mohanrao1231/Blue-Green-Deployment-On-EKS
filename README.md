@@ -283,14 +283,6 @@ This retrieves the backend service currently mapped to the ingress.
 ### Why are we using helm upgrade instead of kubectl patch to switch traffic.
 We use helm upgrade instead of kubectl patch because it ensures changes are consistent with the Helm chart, tracks revisions for easy rollbacks, and supports templated updates, making it ideal for CI/CD automation and avoiding configuration drift.
 
-### Images
-#### prod-flaskapp.us.to
-![Prod](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/green-flask-app.png)
-
-
-#### qapreprod-flaskapp.us.to
-![Pre Prod](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/Blue-flask-app.png)
-
 
 ## Rules for next Deployment 
 ![Rules for next deployment](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Process.png)
