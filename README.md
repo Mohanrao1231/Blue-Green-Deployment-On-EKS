@@ -279,7 +279,7 @@ This retrieves the backend service currently mapped to the ingress.
 
 
 
-### Note
+### Note #
 ### Why are we using helm upgrade instead of kubectl patch to switch traffic.
 We use helm upgrade instead of kubectl patch because it ensures changes are consistent with the Helm chart, tracks revisions for easy rollbacks, and supports templated updates, making it ideal for CI/CD automation and avoiding configuration drift.
 
