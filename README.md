@@ -285,5 +285,5 @@ We use helm upgrade instead of kubectl patch because it ensures changes are cons
 
 
 ## Rules for next Deployment 
-![Rules for next deployment](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Process.png)
+![Rules for next deployment](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/main/Diagrams/Process.png)
 
