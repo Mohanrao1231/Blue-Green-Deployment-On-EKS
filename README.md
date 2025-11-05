@@ -4,7 +4,7 @@ This project implements a Blue-Green deployment strategy to seamlessly deploy a 
 ![Blue Green Deployment](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/main/Diagrams/befor_switching.png)
 
 After Switching the  traffics 
-![Blue Green Deployment(after switching)](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/after_switching.png)
+![Blue Green Deployment(after switching)](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/main/Diagrams/after_switching.png)
 
 ## Jenkins Pipeline for Blue Green Deployment using Helm Charts
 This pipeline facilitates Blue-Green Deployment with comprehensive features to manage deployments, traffic switching, and rollback seamlessly. It includes the following parameters:
