@@ -259,7 +259,7 @@ aws eks update-kubeconfig --region us-east-1 --name Blue-Green
 ### Create a Jenkins Pipeline
 Create a Jenkins Pipeline **Blue-Green-Deployemnt** using the pipeline script "Blue-Green-deploy-jenkinsfile" and bluild using parameters.
 
-![pipeline-stage-view](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/Jenkins-stage-view.png)
+![pipeline-stage-view](https://github.com/Mohanrao1231/Blue-Green-Deployment-On-EKS/blob/main/ScreenShots/Jenkins-stage-view.png)
 
 ## How Switching of traffic is happening 
 1. The script switch-traffic.sh first checks the current service receiving traffic by querying the ingress resource:
